@@ -89,16 +89,17 @@ Tetris.Block.shapes = [
 ];
 
 
-
+/*
 // configuration object
 var boundingBoxConfig = {
-    width: 360,
-    height: 360,
-    depth: 1200,
-    splitX: 6,
-    splitY: 6,
-    splitZ: 20
+    width: window.innerWidth, //900,
+    height: window.innerHeight, //900,
+    depth: 60,
+    splitX: window.innerWidth/60, //15,
+    splitY: window.innerHeight/60, //15,
+    splitZ: 1
 };
+*/
 /*
 var boundingBoxConfig = {
     width: window.innerWidth,
@@ -149,14 +150,14 @@ Tetris.Block.generate = function(){
     Tetris.Block.position = {
         x: Math.floor(Tetris.boundingBoxConfig.splitX/2)-1, 
         y: Math.floor(Tetris.boundingBoxConfig.splitY/2)-1,
-        z: 20 //DO NOT CHANGE VISUAL GLITCES
+        z: 0 //DO NOT CHANGE VISUAL GLITCES
     };
 
+    /*
     if (Tetris.Board.testCollision(true) === Tetris.Board.COLLISION.GROUND) {
         Tetris.gameOver = true;
         Tetris.pointsDOM.innerHTML = "GAME OVER";
-        //Cufon.replace('#points');
-    }
+    }*/
 
     Tetris.Block.mesh.position.x = (Tetris.Block.position.x - Tetris.boundingBoxConfig.splitX/2) * Tetris.blockSize/2;
     Tetris.Block.mesh.position.y = (Tetris.Block.position.y - Tetris.boundingBoxConfig.splitY/2) * Tetris.blockSize/2;
@@ -173,6 +174,10 @@ Tetris.Block.rotate = function(x,y,z){
     Tetris.Block.mesh.rotateX(x*Math.PI/180);
     Tetris.Block.mesh.rotateY(y*Math.PI/180);
     Tetris.Block.mesh.rotateZ(z*Math.PI/180);
+
+    if (Tetris.Board.testCollision(false) === Tetris.Board.COLLISION.WALL) {
+        Tetris.Block.rotate(-x, -y, -z); // laziness FTW
+    }
 };
 
 
@@ -307,6 +312,16 @@ Tetris.init = function() {
   
     //console.log("setting boundingBoxConfig")
     // configuration object
+    // configuration object
+var boundingBoxConfig = {
+    width: Math.floor(window.innerWidth), //900,
+    height: Math.floor(window.innerHeight), //900,
+    depth: 60,
+    splitX: Math.floor(window.innerWidth/60), //15,
+    splitY: Math.floor(window.innerHeight/60), //15,
+    splitZ: 1
+};
+
     Tetris.boundingBoxConfig = boundingBoxConfig;
     Tetris.blockSize = boundingBoxConfig.width/boundingBoxConfig.splitX;
 
@@ -381,13 +396,14 @@ Tetris.Board.testCollision = function (ground_check){
             return Tetris.Board.COLLISION.WALL;
         }
 
+        console.log("ydir:" + shape[i].y + posy);
         //block on block detection
         if (fields[shape[i].x + posx][shape[i].y + posy][shape[i].z + posz - 1] === Tetris.Board.FIELD.PETRIFIED) {
             return ground_check ? Tetris.Board.COLLISION.GROUND : Tetris.Board.COLLISION.WALL;
         }
 
         //collision with the ground
-        if ((shape[i].z + posz) <= 0){
+        if ((shape[i].y + posy) <= 0){
             return Tetris.Board.COLLISION.GROUND;
         }
     }
@@ -466,7 +482,7 @@ Tetris.animate = function() {
     while(Tetris.cumulatedFrameTime > Tetris.gameStepTime) {
     // block movement will go here
         Tetris.cumulatedFrameTime -= Tetris.gameStepTime;
-        Tetris.Block.move(0,0,-1);
+        Tetris.Block.move(0,0, 0); //-1);
     }
     
     Tetris.renderer.render(Tetris.scene, Tetris.camera);
