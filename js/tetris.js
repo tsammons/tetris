@@ -121,7 +121,7 @@ Tetris.Block.position = {};
 Tetris.Block.generate = function(){
     var geometry, tmpGeometry;
 
-    var type = 5; //Math.floor(Math.random() * (Tetris.Block.shapes.length));
+    var type = Math.floor(Math.random() * (Tetris.Block.shapes.length));
     this.blockType = type;
 
     //how the block is an array of block positions
@@ -175,12 +175,14 @@ Tetris.Block.generate = function(){
 Tetris.Block.rotate = function(x,y,z){
 
     Tetris.Block.mesh.rotateX(x*Math.PI/180);
+    Tetris.Block.mesh.rotation.x+= x * Math.PI / 180;
     Tetris.Block.mesh.rotateY(y*Math.PI/180);
+    Tetris.Block.mesh.rotation.y+= y * Math.PI / 180;
     Tetris.Block.mesh.rotateZ(z*Math.PI/180);
-    console.log(Tetris.Block.mesh.rotation.x + " " + Tetris.Block.mesh.rotation.y + " " + Tetris.Block.mesh.rotation.z);
+    Tetris.Block.mesh.rotation.z+= z * Math.PI / 180;
 
     var rotationMatrix = new THREE.Matrix4();
-    var a = new THREE.Euler(Tetris.Block.mesh.rotation.x+= x * Math.PI / 180, Tetris.Block.mesh.rotation.y+= y * Math.PI / 180, Tetris.Block.mesh.rotation.z+= x * Math.PI / 180, 'XYZ');
+    var a = new THREE.Euler(Tetris.Block.mesh.rotation.x, Tetris.Block.mesh.rotation.y, Tetris.Block.mesh.rotation.z, 'XYZ');
     rotationMatrix.makeRotationFromEuler(a);
 
     for (var i = 0; i < Tetris.Block.shape.length; i++) {
