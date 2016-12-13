@@ -37,11 +37,14 @@ Tetris.Utils = {};
 
 //allow multiple versions of a single vector to be stored to prevent memory problems
 Tetris.Utils.cloneVector = function(v){
+    return new THREE.Vector3(v.x, v.y, v.z);
+/*
     return {
         x: v.x, 
         y: v.y, 
         z: v.z
     };
+    */
 }
 
 Tetris.Utils.roundVector = function(v) {
@@ -118,7 +121,7 @@ Tetris.Block.position = {};
 Tetris.Block.generate = function(){
     var geometry, tmpGeometry;
 
-    var type = Math.floor(Math.random() * (Tetris.Block.shapes.length));
+    var type = 5; //Math.floor(Math.random() * (Tetris.Block.shapes.length));
     this.blockType = type;
 
     //how the block is an array of block positions
@@ -153,11 +156,11 @@ Tetris.Block.generate = function(){
         z: 0 //DO NOT CHANGE VISUAL GLITCES
     };
 
-    /*
+    
     if (Tetris.Board.testCollision(true) === Tetris.Board.COLLISION.GROUND) {
         Tetris.gameOver = true;
         Tetris.pointsDOM.innerHTML = "GAME OVER";
-    }*/
+    }
 
     Tetris.Block.mesh.position.x = (Tetris.Block.position.x - Tetris.boundingBoxConfig.splitX/2) * Tetris.blockSize/2;
     Tetris.Block.mesh.position.y = (Tetris.Block.position.y - Tetris.boundingBoxConfig.splitY/2) * Tetris.blockSize/2;
@@ -174,6 +177,16 @@ Tetris.Block.rotate = function(x,y,z){
     Tetris.Block.mesh.rotateX(x*Math.PI/180);
     Tetris.Block.mesh.rotateY(y*Math.PI/180);
     Tetris.Block.mesh.rotateZ(z*Math.PI/180);
+    console.log(Tetris.Block.mesh.rotation.x + " " + Tetris.Block.mesh.rotation.y + " " + Tetris.Block.mesh.rotation.z);
+
+    var rotationMatrix = new THREE.Matrix4();
+    var a = new THREE.Euler(Tetris.Block.mesh.rotation.x+= x * Math.PI / 180, Tetris.Block.mesh.rotation.y+= y * Math.PI / 180, Tetris.Block.mesh.rotation.z+= x * Math.PI / 180, 'XYZ');
+    rotationMatrix.makeRotationFromEuler(a);
+
+    for (var i = 0; i < Tetris.Block.shape.length; i++) {
+        Tetris.Block.shape[i] = Tetris.Utils.cloneVector(Tetris.Block.shapes[this.blockType][i]).applyMatrix4(rotationMatrix);
+        Tetris.Utils.roundVector(Tetris.Block.shape[i]);
+    }
 
     if (Tetris.Board.testCollision(false) === Tetris.Board.COLLISION.WALL) {
         Tetris.Block.rotate(-x, -y, -z); // laziness FTW
@@ -211,14 +224,13 @@ Tetris.Block.move = function(x,y,z){
     Tetris.Block.mesh.position.z += z *Tetris.blockSize;
     Tetris.Block.position.z += z;
 
-    console.log(Tetris.Block.position.x, Tetris.Block.position.y, Tetris.Block.position.z);
+    //console.log(Tetris.Block.position.x, Tetris.Block.position.y, Tetris.Block.position.z);
 
     var collision = Tetris.Board.testCollision((z != 0));
     ///*
     if (collision === Tetris.Board.COLLISION.WALL){
         Tetris.Block.move(-x, -y, 0);
     }//*/
-    console.log(window.innerHeight);
     if(collision === Tetris.Board.COLLISION.GROUND){
         Tetris.Block.hitBottom();
         Tetris.Board.checkCompleted();
@@ -229,7 +241,7 @@ Tetris.Block.move = function(x,y,z){
 
 
 Tetris.Board.checkCompleted = function() {
-    console.log("Checking Completed")
+    //console.log("Checking Completed")
     var x,y,z,x2,y2,z2, fields = Tetris.Board.fields;
     var rebuild = false;
 
@@ -396,7 +408,7 @@ Tetris.Board.testCollision = function (ground_check){
             return Tetris.Board.COLLISION.WALL;
         }
 
-        console.log("ydir:" + shape[i].y + posy);
+        //console.log("ydir:" + shape[i].y + posy);
         //block on block detection
         if (fields[shape[i].x + posx][shape[i].y + posy][shape[i].z + posz - 1] === Tetris.Board.FIELD.PETRIFIED) {
             return ground_check ? Tetris.Board.COLLISION.GROUND : Tetris.Board.COLLISION.WALL;
